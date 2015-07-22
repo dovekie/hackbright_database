@@ -57,8 +57,6 @@ def get_grade_by_github_title(github, title):
     """
     db_cursor.execute(QUERY, (title, github))
     row = db_cursor.fetchone()
-    print type(row)
-    print row
     print "Grade was %s" % row[0]
 
 
@@ -71,6 +69,29 @@ def assign_grade(github, title, grade):
     db_connection.commit()
     print "Successfully assigned %s to %s" %(grade, github)
 
+
+def add_assignment(project_title, description, max_grade):
+    """Add an assignment to the projects table."""
+    QUERY = """INSERT INTO Projects (title, description, max_grade) VALUES (?, ?, ?)"""
+    description = description.replace('_', ' ')
+    db_cursor.execute(QUERY, (project_title, description, max_grade))
+    db_connection.commit()
+    print "Added %s" %project_title
+
+def get_all_grades(github):
+    """Get all grades. Returns every grade for one student. Takes github name."""
+    QUERY = """
+        SELECT project_title, grade FROM Grades WHERE student_github = ?
+    """
+    db_cursor.execute(QUERY, (github,))
+    
+    list_of_rows = db_cursor.fetchall()
+
+    for row in list_of_rows:
+        print "%s: %s points" % (row[0], row[1])
+    
+
+
 def handle_input():
     """Main loop.
 
@@ -81,11 +102,11 @@ def handle_input():
 
     while command != "quit":
         input_string = raw_input("HBA Database> ")
-        tokens = input_string.split()
+        tokens = input_string.split() # change how we split the string?
         command = tokens[0]
-        # print command
+        #print command
         args = tokens[1:]
-        # print args
+        #print args
 
         if command == "student":
             github = args[0]
@@ -106,6 +127,14 @@ def handle_input():
         elif command == "add_grade":
             github, title, grade = args
             assign_grade(github, title, grade)
+
+        elif command == "add_assignment":
+            project_title, description, max_grade = args
+            add_assignment(project_title, description, max_grade)
+
+        elif command == "get_all_grades":
+            github = args[0]
+            get_all_grades(github)
 
 
 
